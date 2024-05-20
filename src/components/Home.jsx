@@ -5,7 +5,7 @@ import NavBar from "./NavBar";
 import data from "../data/data.json";
 
 const Home = () => {
-  const [viewMode, setViewMode] = useState("table");
+  const [viewMode, setViewMode] = useState("graph");
   const toggleView = () => {
     setViewMode((prevMode) => {
       switch (prevMode) {

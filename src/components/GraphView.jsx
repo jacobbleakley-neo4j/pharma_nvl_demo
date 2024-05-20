@@ -1,5 +1,5 @@
 import { InteractiveNvlWrapper } from "@neo4j-nvl/react";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "../output.css";
 import FitToScreenButton from "./FitToScreenButton";
 import ChangeNodeViewButton from "./ChangeNodeViewButton";
@@ -28,8 +28,6 @@ const GraphView = ({ nodeData }) => {
     });
   }
 
-
-
   for (let i = 0; i < relsArray.length; i++) {
     const caption = relsArray[i].label.toString();
     relationships.push({
@@ -38,14 +36,19 @@ const GraphView = ({ nodeData }) => {
       to: relsArray[i].to.toString(),
       color: "#00334d",
       captions: [{ value: `${caption}` }],
-      width: relsArray[i].noCoactive
+      width: relsArray[i].noCoActives
     });
   }
-  console.log("relsArray", relsArray[0].noCoactives);
+
+  useEffect(() => {
+    nvlRef.current?.fit(idArray);
+  }, [nodeViewImg]);
 
   const mouseEventCallbacks = {
     onNodeClick: (element) => console.log("onClick", element),
     onZoom: (zoom) => console.log("onZoom", zoom),
+    onDrag: (nodes) => console.log('onDrag', nodes),
+    onPan: (evt) => console.log('onPan', evt),
   };
 
   const handleChangeNodeView = () => {
@@ -56,7 +59,6 @@ const GraphView = ({ nodeData }) => {
   for (let i = 0; i < compoundsArray.length; i++) {
     idArray.push(nodes[i].id);
   }
-  console.log(idArray);
 
   return (
     <div>
@@ -72,9 +74,7 @@ const GraphView = ({ nodeData }) => {
           mouseEventCallbacks={mouseEventCallbacks}
         />
       </div>
-      <FitToScreenButton
-        onClick={() => nvlRef.current?.fit(idArray)}
-      />
+      <FitToScreenButton onClick={() => nvlRef.current?.fit(idArray)} />
       <ChangeNodeViewButton onClick={handleChangeNodeView} />
     </div>
   );

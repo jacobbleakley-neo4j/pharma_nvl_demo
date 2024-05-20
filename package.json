@@ -2,7 +2,7 @@
   "name": "nvl_example",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://jacobbleakley-neo4j.github.io/pharma_nvl_demo/",
+  "homepage": "https://jacobbleakley-neo4j.github.io/pharma_nvl_demo",
   "dependencies": {
     "@neo4j-nvl/base": "^0.3.1",
     "@neo4j-nvl/react": "^0.3.1",
