@@ -1,0 +1,50 @@
+{
+  "compounds": [
+    {
+      "compound_id": 1234,
+      "caption": "Molecule: 1234"
+    },
+    {
+      "compound_id": 2345,
+      "caption": "Molecule: 2345"
+    },
+    {
+      "compound_id": 3456,
+      "caption": "Molecule: 3456"
+    },
+    {
+      "compound_id": 4567,
+      "caption": "Molecule: 4567"
+    },
+    {
+      "compound_id": 5678,
+      "caption": "Molecule: 5678"
+    }
+  ],
+  "relationships": [
+    {
+      "from": 1234,
+      "to": 2345,
+      "label": "co-active with",
+      "noCoActives": 1
+    },
+    {
+      "from": 1234,
+      "to": 3456,
+      "label": "co-active with",
+      "noCoActives": 2
+    },
+    {
+      "from": 1234,
+      "to": 4567,
+      "label": "co-active with",
+      "noCoActives": 3
+    },
+    {
+      "from": 1234,
+      "to": 5678,
+      "label": "co-active with",
+      "noCoActives": 4
+    }
+  ]
+}
