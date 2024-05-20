@@ -36,7 +36,7 @@ const GraphView = ({ nodeData }) => {
       to: relsArray[i].to.toString(),
       color: "#00334d",
       captions: [{ value: `${caption}` }],
-      width: relsArray[i].noCoActives
+      width: relsArray[i].width,
     });
   }
 
@@ -44,11 +44,19 @@ const GraphView = ({ nodeData }) => {
     nvlRef.current?.fit(idArray);
   }, [nodeViewImg]);
 
+  const nvlContainer = nvlRef.current?.getContainer();
+  useEffect(() => {
+    if (nvlContainer == null) return;
+    const divElement = nvlContainer.querySelector("div");
+    if (divElement == null) return;
+    divElement.style.pointerEvents = "none";
+  }, [nvlContainer]);
+
   const mouseEventCallbacks = {
     onNodeClick: (element) => console.log("onClick", element),
     onZoom: (zoom) => console.log("onZoom", zoom),
-    onDrag: (nodes) => console.log('onDrag', nodes),
-    onPan: (evt) => console.log('onPan', evt),
+    onDrag: (nodes) => console.log("onDrag", nodes),
+    onPan: (evt) => console.log("onPan", evt),
   };
 
   const handleChangeNodeView = () => {
@@ -59,7 +67,47 @@ const GraphView = ({ nodeData }) => {
   for (let i = 0; i < compoundsArray.length; i++) {
     idArray.push(nodes[i].id);
   }
+  
+    const checkCoactives = (relsArray) => {
+    // Create a copy of relsArray and sort it by noCoActives
+    const sortedRelsArray = [...relsArray].sort(
+      (a, b) => a.noCoActives - b.noCoActives
+    );
+    console.log("sortedRelsArray", sortedRelsArray);
 
+    // Calculate the number of distinct widths needed
+    const numberOfWidths = Math.min(sortedRelsArray.length, 5); // Changed to 5 for more distribution
+    console.log("numberOfWidths", numberOfWidths);
+
+    // Get the maximum noCoActives value
+    const maxCoactives =
+      sortedRelsArray[sortedRelsArray.length - 1].noCoActives;
+    console.log("maxCoactives", maxCoactives);
+
+    // Calculate the range for each width group
+    const coactiveDivide = Math.ceil(maxCoactives / numberOfWidths);
+    console.log("coactiveDivide", coactiveDivide);
+
+    // Assign widths to the relationships based on noCoActives
+    for (let i = 1; i <= numberOfWidths; i++) {
+      for (let j = 0; j < sortedRelsArray.length; j++) {
+        const noCoActives = sortedRelsArray[j].noCoActives;
+        if (
+          noCoActives > coactiveDivide * (i - 1) &&
+          noCoActives <= coactiveDivide * i
+        ) {
+          sortedRelsArray[j].width = i;
+        }
+      }
+    }
+
+    console.log("relsArray with widths", sortedRelsArray);
+    return sortedRelsArray;
+  };
+
+    useEffect(() => {
+    checkCoactives(relsArray);
+  }, []);
   return (
     <div>
       <div style={{ height: "95vh" }}>
