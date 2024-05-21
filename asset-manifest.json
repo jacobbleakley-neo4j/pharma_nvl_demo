@@ -1,20 +1,20 @@
 {
   "files": {
     "main.css": "/pharma_nvl_demo/static/css/main.b52b237d.css",
-    "main.js": "/pharma_nvl_demo/static/js/main.d1a9b987.js",
+    "main.js": "/pharma_nvl_demo/static/js/main.e4c45f15.js",
     "CoseBilkentLayout.js": "/pharma_nvl_demo/static/js/CoseBilkentLayout.a8f66ff6.chunk.js",
     "HierarchicalLayout.js": "/pharma_nvl_demo/static/js/HierarchicalLayout.abfb893f.chunk.js",
     "static/js/453.1c35bd6b.chunk.js": "/pharma_nvl_demo/static/js/453.1c35bd6b.chunk.js",
     "static/media/logo.png": "/pharma_nvl_demo/static/media/logo.9fec517d659d4763cf9c.png",
     "index.html": "/pharma_nvl_demo/index.html",
     "main.b52b237d.css.map": "/pharma_nvl_demo/static/css/main.b52b237d.css.map",
-    "main.d1a9b987.js.map": "/pharma_nvl_demo/static/js/main.d1a9b987.js.map",
+    "main.e4c45f15.js.map": "/pharma_nvl_demo/static/js/main.e4c45f15.js.map",
     "CoseBilkentLayout.a8f66ff6.chunk.js.map": "/pharma_nvl_demo/static/js/CoseBilkentLayout.a8f66ff6.chunk.js.map",
     "HierarchicalLayout.abfb893f.chunk.js.map": "/pharma_nvl_demo/static/js/HierarchicalLayout.abfb893f.chunk.js.map",
     "453.1c35bd6b.chunk.js.map": "/pharma_nvl_demo/static/js/453.1c35bd6b.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.b52b237d.css",
-    "static/js/main.d1a9b987.js"
+    "static/js/main.e4c45f15.js"
   ]
 }
