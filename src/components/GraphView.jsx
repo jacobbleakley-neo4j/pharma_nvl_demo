@@ -11,6 +11,7 @@ const GraphView = ({ nodeData }) => {
   const relationships = [];
   const nvlRef = useRef();
   const [nodeViewImg, setNodeViewImg] = useState(true);
+  const [nodePositions, setNodePositions] = useState({});
 
   for (let i = 0; i < compoundsArray.length; i++) {
     const moleculeId = compoundsArray[i].compound_id.toString();
@@ -18,6 +19,7 @@ const GraphView = ({ nodeData }) => {
     const html = document.createElement("img");
     html.src = `https://www.chemspider.com/ImagesHandler.ashx?id=${moleculeId}&w=250&h=250`;
     html.style = nodeViewImg ? "opacity: 1" : "opacity: 0";
+    html.setAttribute("draggable", "false");
 
     nodes.push({
       id: moleculeId,
@@ -41,16 +43,17 @@ const GraphView = ({ nodeData }) => {
   }
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      const initialNodePositions = nvlRef.current?.getNodePositions();
+      setNodePositions(initialNodePositions);
+      console.log("nodePositions", initialNodePositions);
+    }, 500); // Delay of 500 milliseconds
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     nvlRef.current?.fit(idArray);
   }, [nodeViewImg]);
-
-  const nvlContainer = nvlRef.current?.getContainer();
-  useEffect(() => {
-    if (nvlContainer == null) return;
-    const divElement = nvlContainer.querySelector("div");
-    if (divElement == null) return;
-    divElement.style.pointerEvents = "none";
-  }, [nvlContainer]);
 
   const mouseEventCallbacks = {
     onNodeClick: (element) => console.log("onClick", element),
@@ -67,8 +70,8 @@ const GraphView = ({ nodeData }) => {
   for (let i = 0; i < compoundsArray.length; i++) {
     idArray.push(nodes[i].id);
   }
-  
-    const checkCoactives = (relsArray) => {
+
+  const checkCoactives = (relsArray) => {
     // Create a copy of relsArray and sort it by noCoActives
     const sortedRelsArray = [...relsArray].sort(
       (a, b) => a.noCoActives - b.noCoActives
@@ -100,12 +103,17 @@ const GraphView = ({ nodeData }) => {
         }
       }
     }
-
-    console.log("relsArray with widths", sortedRelsArray);
     return sortedRelsArray;
   };
 
-    useEffect(() => {
+  const handleClick = () => {
+    nvlRef.current?.fit(idArray);
+    if (nodePositions) {
+      nvlRef.current?.setNodePositions(nodePositions);
+    }
+  };
+
+  useEffect(() => {
     checkCoactives(relsArray);
   }, []);
   return (
@@ -122,7 +130,7 @@ const GraphView = ({ nodeData }) => {
           mouseEventCallbacks={mouseEventCallbacks}
         />
       </div>
-      <FitToScreenButton onClick={() => nvlRef.current?.fit(idArray)} />
+      <FitToScreenButton onClick={handleClick} />
       <ChangeNodeViewButton onClick={handleChangeNodeView} />
     </div>
   );
