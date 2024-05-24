@@ -1,64 +1,58 @@
 import { InteractiveNvlWrapper } from "@neo4j-nvl/react";
 import React, { useRef, useState, useEffect } from "react";
+import { useDispatch, useSelector } from 'react-redux';
 import "../output.css";
-import FitToScreenButton from "./FitToScreenButton";
-import ChangeNodeViewButton from "./ChangeNodeViewButton";
+import FitToScreenButton from "../utils/FitToScreenButton";
+import ChangeNodeViewButton from "../utils/ChangeNodeViewButton";
 
 const GraphView = ({ nodeData }) => {
   const compoundsArray = nodeData.compounds;
   const relsArray = nodeData.relationships;
-  const nodes = [];
-  const relationships = [];
   const nvlRef = useRef();
   const [nodeViewImg, setNodeViewImg] = useState(true);
   const [nodePositions, setNodePositions] = useState({});
+  const dispatch = useDispatch();
+  const savedNodePositions = useSelector(
+    (state) => state.nodePositions.nodePositions
+  );
 
-  for (let i = 0; i < compoundsArray.length; i++) {
-    const moleculeId = compoundsArray[i].compound_id.toString();
-    const caption = compoundsArray[i].caption.toString();
-    const html = document.createElement("img");
-    html.src = `https://www.chemspider.com/ImagesHandler.ashx?id=${moleculeId}&w=250&h=250`;
-    html.style = nodeViewImg ? "opacity: 1" : "opacity: 0";
-    html.setAttribute("draggable", "false");
+  const createCompoundImage = ( compoundId) => {
+    const img = document.createElement('img');
+    img.src = `https://www.chemspider.com/ImagesHandler.ashx?id=${compoundId}&w=250&h=250`;
+    img.style = nodeViewImg ? 'opacity: 1' : 'opacity: 0';
+    img.setAttribute('draggable', 'false');
+    return img;
+  };
 
-    nodes.push({
-      id: moleculeId,
-      captions: [{ value: nodeViewImg ? `` : `${caption}`, styles: ["bold"] }],
-      color: nodeViewImg ? "#FFFFFF" : "#006699",
-      size: 25,
-      html,
-    });
-  }
 
-  for (let i = 0; i < relsArray.length; i++) {
-    const caption = relsArray[i].label.toString();
-    relationships.push({
-      id: i.toString(),
-      from: relsArray[i].from.toString(),
-      to: relsArray[i].to.toString(),
-      color: "#00334d",
-      captions: [{ value: `${caption}` }],
-      width: relsArray[i].width,
-    });
-  }
+  const nodes = compoundsArray.map(compound => ({
+    id: compound.compound_id.toString(),
+    captions: [{ value: `${compound.caption.toString()}`, styles: ['bold'] }],
+    color: nodeViewImg ? "#FFFFFF" : "#006699",
+    size: 25,
+    html: createCompoundImage(compound.compound_id)
+  }));
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const initialNodePositions = nvlRef.current?.getNodePositions();
-      setNodePositions(initialNodePositions);
-      console.log("nodePositions", initialNodePositions);
-    }, 500); // Delay of 500 milliseconds
-    return () => clearTimeout(timer);
-  }, []);
+  const relationships = relsArray.map((rel, index) => ({
+    id: index.toString(),
+    from: rel.from.toString(),
+    to: rel.to.toString(),
+    color: '#00334d',
+    captions: [{ value: `${rel.label.toString()}` }],
+    width: rel.width,
+  }));
 
-  useEffect(() => {
-    nvlRef.current?.fit(idArray);
-  }, [nodeViewImg]);
+
+
+  const handleNodeDrag = (nodes) => {
+    const newPositions = nvlRef.current?.getNodePositions();
+    dispatch(setNodePositions(newPositions));
+  };
 
   const mouseEventCallbacks = {
     onNodeClick: (element) => console.log("onClick", element),
     onZoom: (zoom) => console.log("onZoom", zoom),
-    onDrag: (nodes) => console.log("onDrag", nodes),
+    onDrag: () => handleNodeDrag,
     onPan: (evt) => console.log("onPan", evt),
   };
 
@@ -113,9 +107,25 @@ const GraphView = ({ nodeData }) => {
     }
   };
 
+  checkCoactives(relsArray);
+
   useEffect(() => {
-    checkCoactives(relsArray);
+    const timer = 
+    // setTimeout(
+      () => {
+      nvlRef.current?.fit(idArray);
+      const initialNodePositions = nvlRef.current?.getNodePositions();
+      setNodePositions(initialNodePositions);
+      console.log("nodePositions", initialNodePositions);
+    }
+    // , 1000); // Delay of 500 milliseconds
+    // return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    nvlRef.current?.fit(idArray);
+  }, [nodeViewImg]);
+
   return (
     <div>
       <div style={{ height: "95vh" }}>
@@ -125,7 +135,7 @@ const GraphView = ({ nodeData }) => {
           captions={["caption"]}
           ref={nvlRef}
           layout="hierarchical"
-          nvlOptions={{ initialZoom: 3, useWebGL: false }}
+          nvlOptions={{ useWebGL: false }}
           nvlCallbacks={{ onLayoutDone: () => console.log("layout done") }}
           mouseEventCallbacks={mouseEventCallbacks}
         />
