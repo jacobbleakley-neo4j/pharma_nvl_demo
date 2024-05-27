@@ -1,34 +1,35 @@
-import React, { useState } from "react";
+import React from "react";
 import GraphView from "./GraphView";
 import TableView from "./TableView";
 import NavBar from "./NavBar";
 import data from "../data/data.json";
+import { setViewMode } from "../redux/actions";
+import { useDispatch, useSelector } from "react-redux";
 
 const Home = () => {
-  const [viewMode, setViewMode] = useState("graph");
+  const dispatch = useDispatch();
+  const viewMode = useSelector((state) => state.viewMode.viewMode);
+
   const toggleView = () => {
-    setViewMode((prevMode) => {
-      switch (prevMode) {
-        case "table":
-          return "graph";
-        case "graph":
-          return "table";
-      }
-    });
+    const newViewMode = viewMode === "table" ? "graph" : "table";
+    dispatch(setViewMode(newViewMode));
   };
-   
+
   return (
     <div className="flex flex-col h-screen">
       <NavBar viewMode={viewMode} toggleView={toggleView} />
       <div className="flex-grow overflow-auto mt-16">
-        {viewMode === "graph" ? (
-          <GraphView nodeData ={data} />
-        ) : (
+        <div style={{ display: viewMode === "graph" ? "block" : "none" }}>
+          <GraphView nodeData={data} />
+        </div>
+        <div style={{ display: viewMode === "table" ? "block" : "none" }}>
           <TableView nodeData={data} />
-        )}
+        </div>
       </div>
     </div>
   );
 };
 
 export default Home;
+
+

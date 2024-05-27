@@ -1,19 +1,15 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { InteractiveNvlWrapper } from "@neo4j-nvl/react";
 import FitToScreenButton from "../utils/FitToScreenButton";
 import ChangeNodeViewButton from "../utils/ChangeNodeViewButton";
 import {
-  setTempNodePositions,
-  setInitialNodePositions,
+  setInitialNodePositions, setNodeViewImg
 } from "../redux/actions";
 import "../output.css";
 
 const GraphView = React.memo(({ nodeData }) => {
   const dispatch = useDispatch();
-  const savedNodePositions = useSelector(
-    (state) => state.nodePositions.nodePositions
-  );
   const initialNodePositions = useSelector(
     (state) => state.initialNodePositions.initialNodePositions
   );
@@ -23,7 +19,7 @@ const GraphView = React.memo(({ nodeData }) => {
   const nodes = [];
   const relationships = [];
   const nvlRef = useRef();
-  const [nodeViewImg, setNodeViewImg] = useState(true);
+  const nodeViewImg = useSelector((state) => state.nodeViewImg.nodeViewImg);
   const nodePositionsRef = useRef({});
 
   for (let i = 0; i < compoundsArray.length; i++) {
@@ -66,7 +62,7 @@ const GraphView = React.memo(({ nodeData }) => {
   };
 
   const handleChangeNodeView = () => {
-    setNodeViewImg((prevNodeViewImg) => !prevNodeViewImg);
+    dispatch(setNodeViewImg((prevNodeViewImg) => !prevNodeViewImg));
   };
 
   const idArray = [];
@@ -104,8 +100,6 @@ const GraphView = React.memo(({ nodeData }) => {
 
   const fitToScreen = () => {
     nvlRef.current?.fit(idArray);
-    console.log("node positions", nvlRef.current?.getNodePositions());
-    console.log("initial node positions", initialNodePositions);
     nvlRef.current?.setNodePositions(initialNodePositions);
   };
 
@@ -125,12 +119,6 @@ const GraphView = React.memo(({ nodeData }) => {
       }, 1000);
     }
   }, []);
-
-  // useEffect(() => {
-  //   if (Object.keys(nodePositionsRef.current).length > 0) {
-  //     dispatch(setTempNodePositions(nodePositionsRef.current));
-  //   }
-  // }, [nodePositionsRef.current]);
 
   return (
     <div>
