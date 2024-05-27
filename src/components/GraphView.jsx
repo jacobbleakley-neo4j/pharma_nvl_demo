@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { InteractiveNvlWrapper } from "@neo4j-nvl/react";
 import FitToScreenButton from "../utils/FitToScreenButton";
@@ -8,10 +8,10 @@ import {
 } from "../redux/actions";
 import "../output.css";
 
-const GraphView = React.memo(({ nodeData }) => {
+const GraphView = ({ nodeData }) => {
   const dispatch = useDispatch();
   const initialNodePositions = useSelector(
-    (state) => state.initialNodePositions.initialNodePositions
+    (state) => state.initialNodePositions
   );
 
   const compoundsArray = nodeData.compounds;
@@ -19,7 +19,7 @@ const GraphView = React.memo(({ nodeData }) => {
   const nodes = [];
   const relationships = [];
   const nvlRef = useRef();
-  const nodeViewImg = useSelector((state) => state.nodeViewImg.nodeViewImg);
+  const [nodeViewImg, setNodeViewImg] = useState(true);
   const nodePositionsRef = useRef({});
 
   for (let i = 0; i < compoundsArray.length; i++) {
@@ -62,7 +62,7 @@ const GraphView = React.memo(({ nodeData }) => {
   };
 
   const handleChangeNodeView = () => {
-    dispatch(setNodeViewImg((prevNodeViewImg) => !prevNodeViewImg));
+    setNodeViewImg((prevNodeViewImg) => !prevNodeViewImg);
   };
 
   const idArray = [];
@@ -138,6 +138,6 @@ const GraphView = React.memo(({ nodeData }) => {
       <ChangeNodeViewButton onClick={handleChangeNodeView} />
     </div>
   );
-});
+};
 
-export default GraphView;
+export default React.memo(GraphView);

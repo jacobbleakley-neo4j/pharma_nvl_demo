@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import GraphView from "./GraphView";
 import TableView from "./TableView";
 import NavBar from "./NavBar";
@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 const Home = () => {
   const dispatch = useDispatch();
-  const viewMode = useSelector((state) => state.viewMode.viewMode);
+  const viewMode = useSelector((state) => state.viewMode);
 
   const toggleView = () => {
     const newViewMode = viewMode === "table" ? "graph" : "table";
@@ -31,5 +31,8 @@ const Home = () => {
 };
 
 export default Home;
+
+
+
 
 
