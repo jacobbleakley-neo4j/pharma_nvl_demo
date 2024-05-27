@@ -1,59 +1,68 @@
-import { InteractiveNvlWrapper } from "@neo4j-nvl/react";
 import React, { useRef, useState, useEffect } from "react";
-import { useDispatch, useSelector } from 'react-redux';
-import "../output.css";
+import { useDispatch, useSelector } from "react-redux";
+import { InteractiveNvlWrapper } from "@neo4j-nvl/react";
 import FitToScreenButton from "../utils/FitToScreenButton";
 import ChangeNodeViewButton from "../utils/ChangeNodeViewButton";
+import {
+  setTempNodePositions,
+  setInitialNodePositions,
+} from "../redux/actions";
+import "../output.css";
 
-const GraphView = ({ nodeData }) => {
-  const compoundsArray = nodeData.compounds;
-  const relsArray = nodeData.relationships;
-  const nvlRef = useRef();
-  const [nodeViewImg, setNodeViewImg] = useState(true);
-  const [nodePositions, setNodePositions] = useState({});
+const GraphView = React.memo(({ nodeData }) => {
   const dispatch = useDispatch();
   const savedNodePositions = useSelector(
     (state) => state.nodePositions.nodePositions
   );
+  const initialNodePositions = useSelector(
+    (state) => state.initialNodePositions.initialNodePositions
+  );
 
-  const createCompoundImage = ( compoundId) => {
-    const img = document.createElement('img');
-    img.src = `https://www.chemspider.com/ImagesHandler.ashx?id=${compoundId}&w=250&h=250`;
-    img.style = nodeViewImg ? 'opacity: 1' : 'opacity: 0';
-    img.setAttribute('draggable', 'false');
-    return img;
-  };
+  const compoundsArray = nodeData.compounds;
+  const relsArray = nodeData.relationships;
+  const nodes = [];
+  const relationships = [];
+  const nvlRef = useRef();
+  const [nodeViewImg, setNodeViewImg] = useState(true);
+  const nodePositionsRef = useRef({});
 
+  for (let i = 0; i < compoundsArray.length; i++) {
+    const moleculeId = compoundsArray[i].compound_id.toString();
+    const caption = compoundsArray[i].caption.toString();
+    const html = document.createElement("img");
+    html.src = `https://www.chemspider.com/ImagesHandler.ashx?id=${moleculeId}&w=250&h=250`;
+    html.style = nodeViewImg ? "opacity: 1" : "opacity: 0";
+    html.setAttribute("draggable", "false");
 
-  const nodes = compoundsArray.map(compound => ({
-    id: compound.compound_id.toString(),
-    captions: [{ value: `${compound.caption.toString()}`, styles: ['bold'] }],
-    color: nodeViewImg ? "#FFFFFF" : "#006699",
-    size: 25,
-    html: createCompoundImage(compound.compound_id)
-  }));
+    nodes.push({
+      id: moleculeId,
+      captions: [{ value: nodeViewImg ? `` : `${caption}`, styles: ["bold"] }],
+      color: nodeViewImg ? "#FFFFFF" : "#006699",
+      size: 25,
+      html,
+    });
+  }
 
-  const relationships = relsArray.map((rel, index) => ({
-    id: index.toString(),
-    from: rel.from.toString(),
-    to: rel.to.toString(),
-    color: '#00334d',
-    captions: [{ value: `${rel.label.toString()}` }],
-    width: rel.width,
-  }));
-
-
-
-  const handleNodeDrag = (nodes) => {
-    const newPositions = nvlRef.current?.getNodePositions();
-    dispatch(setNodePositions(newPositions));
-  };
+  for (let i = 0; i < relsArray.length; i++) {
+    const caption = relsArray[i].label.toString();
+    relationships.push({
+      id: i.toString(),
+      from: relsArray[i].from.toString(),
+      to: relsArray[i].to.toString(),
+      color: "#00334d",
+      captions: [{ value: `${caption}` }],
+      width: relsArray[i].width,
+    });
+  }
 
   const mouseEventCallbacks = {
-    onNodeClick: (element) => console.log("onClick", element),
-    onZoom: (zoom) => console.log("onZoom", zoom),
-    onDrag: () => handleNodeDrag,
-    onPan: (evt) => console.log("onPan", evt),
+    onNodeClick: () => void 0,
+    onZoom: () => void 0,
+    onDrag: (nodes) => {
+      const newPositions = nvlRef.current?.getNodePositions();
+      nodePositionsRef.current = newPositions;
+    },
+    onPan: () => void 0,
   };
 
   const handleChangeNodeView = () => {
@@ -66,26 +75,17 @@ const GraphView = ({ nodeData }) => {
   }
 
   const checkCoactives = (relsArray) => {
-    // Create a copy of relsArray and sort it by noCoActives
     const sortedRelsArray = [...relsArray].sort(
       (a, b) => a.noCoActives - b.noCoActives
     );
-    console.log("sortedRelsArray", sortedRelsArray);
 
-    // Calculate the number of distinct widths needed
-    const numberOfWidths = Math.min(sortedRelsArray.length, 5); // Changed to 5 for more distribution
-    console.log("numberOfWidths", numberOfWidths);
+    const numberOfWidths = Math.min(sortedRelsArray.length, 5);
 
-    // Get the maximum noCoActives value
     const maxCoactives =
       sortedRelsArray[sortedRelsArray.length - 1].noCoActives;
-    console.log("maxCoactives", maxCoactives);
 
-    // Calculate the range for each width group
     const coactiveDivide = Math.ceil(maxCoactives / numberOfWidths);
-    console.log("coactiveDivide", coactiveDivide);
 
-    // Assign widths to the relationships based on noCoActives
     for (let i = 1; i <= numberOfWidths; i++) {
       for (let j = 0; j < sortedRelsArray.length; j++) {
         const noCoActives = sortedRelsArray[j].noCoActives;
@@ -100,31 +100,37 @@ const GraphView = ({ nodeData }) => {
     return sortedRelsArray;
   };
 
-  const handleClick = () => {
-    nvlRef.current?.fit(idArray);
-    if (nodePositions) {
-      nvlRef.current?.setNodePositions(nodePositions);
-    }
-  };
-
   checkCoactives(relsArray);
 
-  useEffect(() => {
-    const timer = 
-    // setTimeout(
-      () => {
-      nvlRef.current?.fit(idArray);
-      const initialNodePositions = nvlRef.current?.getNodePositions();
-      setNodePositions(initialNodePositions);
-      console.log("nodePositions", initialNodePositions);
-    }
-    // , 1000); // Delay of 500 milliseconds
-    // return () => clearTimeout(timer);
-  }, []);
+  const fitToScreen = () => {
+    nvlRef.current?.fit(idArray);
+    console.log("node positions", nvlRef.current?.getNodePositions());
+    console.log("initial node positions", initialNodePositions);
+    nvlRef.current?.setNodePositions(initialNodePositions);
+  };
 
   useEffect(() => {
-    nvlRef.current?.fit(idArray);
-  }, [nodeViewImg]);
+    setTimeout(() => {
+      nvlRef.current?.fit(idArray);
+    }, 100);
+
+    if (
+      initialNodePositions === undefined ||
+      Object.keys(initialNodePositions).length === 0
+    ) {
+      setTimeout(() => {
+        console.log("Component did mount");
+        const initialPosition = nvlRef.current?.getNodePositions();
+        dispatch(setInitialNodePositions(initialPosition));
+      }, 1000);
+    }
+  }, []);
+
+  // useEffect(() => {
+  //   if (Object.keys(nodePositionsRef.current).length > 0) {
+  //     dispatch(setTempNodePositions(nodePositionsRef.current));
+  //   }
+  // }, [nodePositionsRef.current]);
 
   return (
     <div>
@@ -135,15 +141,15 @@ const GraphView = ({ nodeData }) => {
           captions={["caption"]}
           ref={nvlRef}
           layout="hierarchical"
-          nvlOptions={{ useWebGL: false }}
+          nvlOptions={{ initialZoom: 2, useWebGL: false }}
           nvlCallbacks={{ onLayoutDone: () => console.log("layout done") }}
           mouseEventCallbacks={mouseEventCallbacks}
         />
       </div>
-      <FitToScreenButton onClick={handleClick} />
+      <FitToScreenButton onClick={fitToScreen} />
       <ChangeNodeViewButton onClick={handleChangeNodeView} />
     </div>
   );
-};
+});
 
 export default GraphView;
